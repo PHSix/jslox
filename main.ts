@@ -5,23 +5,52 @@
 //
 enum TokenType {
 	// Single-character tokens.
-  LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,
-  COMMA, DOT, MINUS, PLUS, SEMICOLON, SLASH, STAR,
+	LEFT_PAREN,
+	RIGHT_PAREN,
+	LEFT_BRACE,
+	RIGHT_BRACE,
+	COMMA,
+	DOT,
+	MINUS,
+	PLUS,
+	SEMICOLON,
+	SLASH,
+	STAR,
 
-  // One or two character tokens.
-  BANG, BANG_EQUAL,
-  EQUAL, EQUAL_EQUAL,
-  GREATER, GREATER_EQUAL,
-  LESS, LESS_EQUAL,
+	// One or two character tokens.
+	BANG,
+	BANG_EQUAL,
+	EQUAL,
+	EQUAL_EQUAL,
+	GREATER,
+	GREATER_EQUAL,
+	LESS,
+	LESS_EQUAL,
 
-  // Literals.
-  IDENTIFIER, STRING, NUMBER,
+	// Literals.
+	IDENTIFIER,
+	STRING,
+	NUMBER,
 
-  // Keywords.
-  AND, CLASS, ELSE, FALSE, FUN, FOR, IF, NIL, OR,
-  PRINT, RETURN, SUPER, THIS, TRUE, VAR, WHILE,
+	// Keywords.
+	AND,
+	CLASS,
+	ELSE,
+	FALSE,
+	FUN,
+	FOR,
+	IF,
+	NIL,
+	OR,
+	PRINT,
+	RETURN,
+	SUPER,
+	THIS,
+	TRUE,
+	VAR,
+	WHILE,
 
-  EOF
+	EOF,
 }
 
 const KEYWORDS: Record<string, TokenType> = {
@@ -44,8 +73,8 @@ const KEYWORDS: Record<string, TokenType> = {
 }
 
 /**
-* define the input of script content, in here, we use a example of a simple script
-*/
+ * define the input of script content, in here, we use a example of a simple script
+ */
 // const content = `
 // // this is a comment
 // (( )){} // grouping stuff
@@ -61,12 +90,12 @@ const content = `
 run(content)
 
 /**
-* the run function is the entry point of the script, it will be called by the main function
-*/
+ * the run function is the entry point of the script, it will be called by the main function
+ */
 function run(source: string) {
 	const tokens = scanCode(source)
 
-	console.log(tokens.map(t => t.toString()).join('\n'))
+	console.log(tokens.map((t) => t.toString()).join('\n'))
 }
 
 // -----------------------------------------------------------------------------
@@ -75,13 +104,12 @@ function run(source: string) {
 //
 // -----------------------------------------------------------------------------
 
-
 interface Token {
-	type: TokenType;
-	lexeme: string;
-	literal: unknown;
-	line: number;
-	toString(): string;
+	type: TokenType
+	lexeme: string
+	literal: unknown
+	line: number
+	toString(): string
 }
 
 function TokenBuilder(type: TokenType, lexeme: string, literal: unknown, line: number): Token {
@@ -97,8 +125,8 @@ function TokenBuilder(type: TokenType, lexeme: string, literal: unknown, line: n
 }
 
 /**
-* Scanner, scan the code and return a token list
-*/
+ * Scanner, scan the code and return a token list
+ */
 function scanCode(source: string): Token[] {
 	const tokens: Token[] = []
 	let start = 0
@@ -167,7 +195,7 @@ function scanCode(source: string): Token[] {
 				addToken(match('=') ? TokenType.GREATER_EQUAL : TokenType.GREATER)
 				break
 			case '/':
-				if (match('/')) { 
+				if (match('/')) {
 					while (peek() !== '\n' && !isEnd()) {
 						advance()
 					}
@@ -201,7 +229,7 @@ function scanCode(source: string): Token[] {
 				if (isAlpha(c)) {
 					identifier()
 				}
-				reportError(line, '', "Unexpected character.")
+				reportError(line, '', 'Unexpected character.')
 		}
 	}
 
@@ -211,12 +239,12 @@ function scanCode(source: string): Token[] {
 		return c
 	}
 
-	function match(c: string) : boolean{
+	function match(c: string): boolean {
 		if (isEnd()) {
 			return false
 		}
 		if (source[current] === c) {
-			current ++
+			current++
 			return true
 		}
 		return false
@@ -237,7 +265,7 @@ function scanCode(source: string): Token[] {
 		}
 
 		if (isEnd()) {
-			reportError(line, '', "Unterminated string.")
+			reportError(line, '', 'Unterminated string.')
 		}
 
 		// to close it
@@ -266,17 +294,17 @@ function scanCode(source: string): Token[] {
 	}
 
 	function peekNext() {
-    if (current + 1 >= source.length) return '\0';
-    return source.charAt(current + 1);
-  }
+		if (current + 1 >= source.length) return '\0'
+		return source.charAt(current + 1)
+	}
 
 	function isAlpha(c: string) {
 		return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c === '_'
 	}
 
 	/**
-	* keyword
-	*/
+	 * keyword identifier
+	 */
 	function identifier() {
 		while (isAlphaOrDigit(peek())) advance()
 		const keyword = KEYWORDS[source.slice(start, current)]
@@ -293,7 +321,7 @@ function scanCode(source: string): Token[] {
 	return tokens
 }
 
-function reportError(line: number,where: string, message: string) {
+function reportError(line: number, where: string, message: string) {
 	console.error(`[line ${line}] Error ${where}: ${message}`)
 	Deno.exit(65)
 }
