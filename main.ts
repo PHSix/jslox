@@ -451,7 +451,7 @@ class Visitor implements ExprVisitor {
 //
 // -----------------------------------------------------------------------------
 
-function parse(tokens: Token[]): Expr {
+function parse(tokens: Token[]): Stmt {
   let current = 0;
 
   function peek() {
@@ -581,9 +581,35 @@ function parse(tokens: Token[]): Expr {
     return equality();
   }
 
-  const expr = expression();
+  function printStatement(): Stmt {
+    const expr = expression();
+    consume(TokenType.SEMICOLON, "Expect ';' after value");
+    return new PrintStmt(expr);
+  }
 
-  return expr;
+  function expressionStatement() {
+    return new ExprStmt(expression());
+  }
+
+  function statement(): Stmt {
+    if (match(TokenType.PRINT)) {
+      return printStatement();
+    }
+
+    return expressionStatement();
+  }
+
+  const stmts: Stmt[] = [];
+
+  while (!isAtEnd()) {
+    stmts.push(statement());
+  }
+
+  return stmts;
+
+  // const expr = expression();
+  //
+  // return expr;
 }
 
 // -----------------------------------------------------------------------------
@@ -650,6 +676,32 @@ class Interpreter implements ExprVisitor {
 
   visitGrouping(expr: Grouping): string {
     return this.evaluate(expr.expr);
+  }
+
+  visitExpressionStmt(stmt: ExprStmt) {
+    this.evaluate(stmt.expr);
+    return null;
+  }
+
+  visitPrintStmt(stmt: PrintStmt) {
+    const value = this.evaluate(stmt.expr);
+    console.log(value);
+    return null;
+  }
+}
+
+abstract class Stmt {
+}
+
+class ExprStmt extends Stmt {
+  constructor(public expr: Expr) {
+    super();
+  }
+}
+
+class PrintStmt extends Stmt {
+  constructor(public expr: Expr) {
+    super();
   }
 }
 
